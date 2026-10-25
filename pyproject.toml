@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multi-step-agent"
+version = "0.1.0"
+description = "Project 5: ReAct-style multi-step autonomous agent for customer support (tau2-bench)"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai>=2.30.1",
+    "langchain-google-genai>=2.0.0",
+    "langgraph>=0.2.0",
+    "langchain-mcp-adapters>=0.1.0",
+    "mcp>=1.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "arize-phoenix-otel>=0.6.0",
+    "openinference-instrumentation-langchain>=0.1.0",
+    "arize-phoenix[server]>=4.0.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.27.0",
+    "langchain-core>=0.3.0",
+    "langchain>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27.0",
+    "pytest-mock>=3.12",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent*", "mcp_servers*", "api*", "tracing*", "eval*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

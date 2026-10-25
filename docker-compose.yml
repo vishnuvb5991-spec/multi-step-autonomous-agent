@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  # ── Arize Phoenix tracing UI ─────────────────────────────────────────────
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: phoenix
+    ports:
+      - "6006:6006"   # Web UI
+      - "4317:4317"   # OTLP gRPC endpoint
+    volumes:
+      - phoenix_data:/root/.phoenix
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6006/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Multi-step agent API ──────────────────────────────────────────────────
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: multi-step-agent
+    ports:
+      - "8080:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PHOENIX_PROJECT=multi-step-agent
+      - PHOENIX_COLLECTOR_ENDPOINT=http://phoenix:6006/v1/traces
+      - MAX_REACT_STEPS=10
+    depends_on:
+      phoenix:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  phoenix_data:

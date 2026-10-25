@@ -34,7 +34,7 @@ _now = datetime.now()
 
 _BOOKINGS: dict[str, dict] = {
     "BK-1001": {
-        "passenger": "Customer_1001",
+        "passenger": "Alice Johnson",
         "flight": "UA-204",
         "origin": "SFO",
         "destination": "JFK",
@@ -47,7 +47,7 @@ _BOOKINGS: dict[str, dict] = {
         "tier": "Silver",
     },
     "BK-1002": {
-        "passenger": "Customer_1002",
+        "passenger": "Bob Smith",
         "flight": "DL-890",
         "origin": "LAX",
         "destination": "ORD",
@@ -60,7 +60,7 @@ _BOOKINGS: dict[str, dict] = {
         "tier": "Gold",
     },
     "BK-1003": {
-        "passenger": "Customer_1003",
+        "passenger": "Carol White",
         "flight": "AA-512",
         "origin": "BOS",
         "destination": "MIA",

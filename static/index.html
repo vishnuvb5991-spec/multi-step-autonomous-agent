@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Step AI Agent · Customer Support</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-sm font-semibold text-white leading-none">Multi-Step AI Agent</h1>
+        <p class="text-xs text-gray-400">Autonomous Customer Support · ReAct + Human-in-the-Loop</p>
+      </div>
+    </div>
+
+    <!-- Domain Selector Pills -->
+    <div class="flex gap-2" id="domain-pills">
+      <button data-domain="retail"
+        class="domain-pill active px-3 py-1 rounded-full text-xs font-medium transition-all">
+        🛍 Retail
+      </button>
+      <button data-domain="airline"
+        class="domain-pill px-3 py-1 rounded-full text-xs font-medium transition-all">
+        ✈ Airline
+      </button>
+      <button data-domain="telecom"
+        class="domain-pill px-3 py-1 rounded-full text-xs font-medium transition-all">
+        📶 Telecom
+      </button>
+    </div>
+  </header>
+
+  <!-- ── API Key Banner (shown if needed) ──────────────────────── -->
+  <div id="api-key-banner" class="hidden bg-amber-900/60 border-b border-amber-700 px-6 py-3">
+    <div class="flex items-center gap-3 max-w-2xl mx-auto">
+      <span class="text-amber-400 text-sm">🔑</span>
+      <label class="text-amber-300 text-sm font-medium shrink-0">API Key:</label>
+      <input id="api-key-input" type="password" placeholder="Enter your AGENT_API_KEY…"
+        class="flex-1 bg-gray-900 border border-amber-700 rounded px-3 py-1 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+      <button id="api-key-save" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-3 py-1 rounded transition-colors">
+        Save
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main: Chat area + Sidebar ─────────────────────────────── -->
+  <main class="flex flex-1 overflow-hidden">
+
+    <!-- Chat column -->
+    <section class="flex flex-col flex-1 overflow-hidden">
+
+      <!-- Messages -->
+      <div id="messages" class="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+        <!-- Welcome bubble -->
+        <div class="flex justify-start">
+          <div class="agent-bubble max-w-lg rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed">
+            <p class="font-medium text-indigo-300 mb-1 text-xs uppercase tracking-wide">AI Agent</p>
+            <p>👋 Hello! I'm your autonomous customer support agent. Select a domain above and ask me anything — order status, flight rebooking, data plan changes, and more.</p>
+            <p class="mt-2 text-gray-400 text-xs">Powered by Gemini · LangGraph ReAct · FastAPI</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval Card (hidden by default) -->
+      <div id="approval-card" class="hidden mx-6 mb-4 rounded-xl border border-amber-500 bg-amber-950/60 p-4">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">⚠️</span>
+          <div class="flex-1">
+            <p class="font-semibold text-amber-300 text-sm mb-1">Human Approval Required</p>
+            <p id="approval-prompt" class="text-gray-300 text-sm leading-relaxed mb-3"></p>
+            <div class="flex gap-3">
+              <button id="btn-approve"
+                class="flex-1 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-2 rounded-lg transition-colors">
+                ✅ Approve
+              </button>
+              <button id="btn-reject"
+                class="flex-1 bg-red-700 hover:bg-red-600 text-white text-sm font-semibold py-2 rounded-lg transition-colors">
+                ❌ Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input row -->
+      <div class="border-t border-gray-800 px-6 py-4 shrink-0 bg-gray-900">
+        <div class="flex gap-3 items-end">
+          <textarea id="user-input"
+            placeholder="Ask about your order, flight, or plan…"
+            rows="1"
+            class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-100 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+            style="max-height:140px"></textarea>
+          <button id="send-btn"
+            class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-3 rounded-xl text-sm font-semibold transition-colors shrink-0">
+            Send
+          </button>
+        </div>
+        <p class="text-xs text-gray-600 mt-2 text-center">
+          Thread: <span id="thread-id-display" class="font-mono text-gray-500">—</span>
+          &nbsp;·&nbsp;Domain: <span id="domain-display" class="text-indigo-400 font-medium">retail</span>
+          &nbsp;·&nbsp;<button id="new-thread-btn" class="text-gray-500 hover:text-gray-300 transition-colors underline">New Thread</button>
+        </p>
+      </div>
+    </section>
+
+    <!-- Sidebar: Info / Stats -->
+    <aside class="w-64 border-l border-gray-800 bg-gray-900 p-4 hidden lg:flex flex-col gap-4 overflow-y-auto shrink-0">
+      <div>
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Session Info</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-gray-500">Domain</dt>
+            <dd id="sb-domain" class="text-indigo-400 font-medium">retail</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-gray-500">Steps</dt>
+            <dd id="sb-steps" class="text-gray-300">0</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-gray-500">Escalated</dt>
+            <dd id="sb-escalated" class="text-gray-300">No</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div>
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Guardrail Flags</h2>
+        <div id="sb-flags" class="text-xs text-gray-500 italic">None triggered</div>
+      </div>
+
+      <div class="mt-auto">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Try These</h2>
+        <div id="sample-prompts" class="space-y-2">
+          <!-- Injected by JS per domain -->
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

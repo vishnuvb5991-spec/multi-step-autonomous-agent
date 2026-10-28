@@ -112,3 +112,25 @@ def test_idor_thread_ownership_protection():
     assert session_manager.verify_ownership("thread-user-a", "user_b_key") is False
     # Attempt access as user A
     assert session_manager.verify_ownership("thread-user-a", "user_a_key") is True
+
+
+def test_root_serves_chat_webpage():
+    """GET / should return 200 with the chat webpage HTML."""
+    resp = client.get("/")
+    assert resp.status_code == 200
+    ct = resp.headers.get("content-type", "")
+    assert "text/html" in ct, f"Expected HTML content-type, got: {ct}"
+    body = resp.text
+    assert "Multi-Step AI Agent" in body, "Page title not found in HTML"
+    assert "domain-pills" in body, "Domain pills element not found in HTML"
+
+
+def test_static_assets_served():
+    """CSS and JS static assets should be accessible."""
+    css_resp = client.get("/static/style.css")
+    assert css_resp.status_code == 200
+    assert "text/css" in css_resp.headers.get("content-type", "")
+
+    js_resp = client.get("/static/app.js")
+    assert js_resp.status_code == 200
+    assert "javascript" in js_resp.headers.get("content-type", "")

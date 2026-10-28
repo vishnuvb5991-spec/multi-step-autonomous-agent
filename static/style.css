@@ -1,0 +1,102 @@
+/* ── Message Bubbles ───────────────────────────────────────────── */
+.agent-bubble {
+  background: #1e2130;
+  border: 1px solid #2d3148;
+  color: #d1d5db;
+}
+
+.user-bubble {
+  background: #3730a3;
+  color: #e0e7ff;
+}
+
+/* ── Domain Pills ──────────────────────────────────────────────── */
+.domain-pill {
+  background: #1f2937;
+  color: #9ca3af;
+  border: 1px solid #374151;
+}
+
+.domain-pill:hover {
+  background: #374151;
+  color: #d1d5db;
+}
+
+.domain-pill.active {
+  background: #4338ca;
+  color: #e0e7ff;
+  border-color: #6366f1;
+}
+
+/* ── Typing indicator dots ─────────────────────────────────────── */
+.typing-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6366f1;
+  animation: bounce 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ── Approval card pulse border ────────────────────────────────── */
+#approval-card {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15); }
+}
+
+/* ── Guardrail flag badges ─────────────────────────────────────── */
+.flag-badge {
+  display: inline-block;
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #991b1b;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 2px;
+}
+
+/* ── Sample prompt chips ───────────────────────────────────────── */
+.prompt-chip {
+  display: block;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  text-align: left;
+  width: 100%;
+}
+
+.prompt-chip:hover {
+  border-color: #4338ca;
+  color: #c7d2fe;
+}
+
+/* ── Textarea auto-grow ────────────────────────────────────────── */
+textarea {
+  overflow: hidden;
+}
+
+/* ── Scrollbar (webkit) ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #4b5563; }

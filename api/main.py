@@ -21,6 +21,7 @@ from typing import Any
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from langgraph.types import Command
 
 from api.auth import verify_api_key
@@ -232,7 +233,7 @@ async def approve(req: ApprovalRequest, user: str = Depends(verify_api_key)):
     )
 
 
-@app.get("/threads/{thread_id}", tags=["debug"])
+@app.get("/threads/{thread_id}", tags=["debug"], include_in_schema=True)
 async def get_thread_state(thread_id: str, user: str = Depends(verify_api_key)):
     """Inspect the current state of a conversation thread.
 
@@ -272,3 +273,15 @@ async def get_thread_state(thread_id: str, user: str = Depends(verify_api_key)):
         "messages": messages,
         "pending_tasks": len(snapshot.tasks),
     }
+
+
+# ---------------------------------------------------------------------------
+# Static file mount (Chat Webpage) — MUST be after all API routes
+# ---------------------------------------------------------------------------
+from pathlib import Path  # noqa: E402
+
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static-assets")
+    # Serve index.html at "/" (html=True enables that)
+    app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="static")

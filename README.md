@@ -1,3 +1,13 @@
+---
+title: Multi-Step Autonomous Customer Support Agent
+emoji: 🤖
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 8080
+pinned: false
+---
+
 # Multi-Step Autonomous Customer Support Agent
 
 **Project 5** — Difficulty 5/5

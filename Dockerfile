@@ -14,9 +14,9 @@ RUN pip install --no-cache-dir -e . --extra-index-url https://pypi.org/simple
 # Copy source
 COPY . .
 
-# Create non-root user
-RUN useradd -m -u 1000 agentuser && chown -R agentuser /app
-USER agentuser
+# Create non-root user (UID 1000 required by Hugging Face Spaces)
+RUN useradd -m -u 1000 user && chown -R user /app
+USER user
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \

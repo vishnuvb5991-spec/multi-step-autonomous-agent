@@ -1,0 +1,101 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE:    multi-step-agent
+  REGION:     us-central1
+  IMAGE:      gcr.io/${{ secrets.GCP_PROJECT_ID }}/multi-step-agent
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run pytest
+        env:
+          DISABLE_TRACING: "true"
+          DISABLE_GRAPH_PREWARM: "true"
+          PHOENIX_WORKING_DIR: /tmp/phoenix
+        run: pytest tests/ -v --tb=short
+
+  deploy:
+    name: Build & Deploy to Cloud Run
+    needs: test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account:            ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build & push image via Cloud Build
+        run: |
+          gcloud builds submit \
+            --tag "$IMAGE:${{ github.sha }}" \
+            --project "$PROJECT_ID" \
+            .
+
+      - name: Tag as latest
+        run: |
+          gcloud container images add-tag \
+            "$IMAGE:${{ github.sha }}" \
+            "$IMAGE:latest" \
+            --quiet
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE:${{ github.sha }}" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 2Gi \
+            --cpu 2 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --concurrency 80 \
+            --timeout 300 \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},AGENT_API_KEY=${{ secrets.AGENT_API_KEY }},DISABLE_TRACING=true,MAX_REACT_STEPS=10,ALLOWED_ORIGINS=*,PHOENIX_WORKING_DIR=/tmp/phoenix" \
+            --project "$PROJECT_ID" \
+            --format "value(status.url)"
+
+      - name: Show deployed URL
+        run: |
+          URL=$(gcloud run services describe "$SERVICE" \
+            --region "$REGION" \
+            --project "$PROJECT_ID" \
+            --format "value(status.url)")
+          echo "🚀 Deployed: $URL"
+          echo "SERVICE_URL=$URL" >> $GITHUB_STEP_SUMMARY

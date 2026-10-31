@@ -1,12 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/main.py": {
-      "runtime": "python3.12"
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
-  },
-  "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/api/main.py" }
   ]
 }

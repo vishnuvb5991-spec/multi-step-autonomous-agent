@@ -52,10 +52,7 @@ const apiKeySave      = document.getElementById('api-key-save');
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 function init() {
-  // Show API key banner if no key stored
-  if (!state.apiKey) {
-    apiKeyBanner.classList.remove('hidden');
-  }
+  // Keep banner hidden by default; only reveal if backend demands auth (401)
   apiKeyInput.value = state.apiKey;
 
   renderSamplePrompts(state.domain);

@@ -1,0 +1,11 @@
+.github
+.phoenix
+.pytest_cache
+.venv
+tests
+eval
+graphify-out
+*.egg-info
+docker-compose.yml
+Dockerfile
+Dockerfile.vercel
